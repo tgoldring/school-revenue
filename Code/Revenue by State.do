@@ -1,5 +1,5 @@
 clear all
-cd "C:/Users/thoma/OneDrive/Work/Projects/School Finance"
+//cd "C:/Users/thoma/OneDrive/Work/Projects/School Finance"
 
 
 // GET FRED CPI DATA (STATE AND LOCAL EXPENDITURES)
@@ -47,8 +47,14 @@ foreach x in total_rev local_rev state_rev fed_rev {
   gen `x' = round(`x'_real / pupils, 1)
 }
 
+// RANK REVENUE BY YEAR
+foreach var of varlist total_rev local_rev state_rev fed_rev {
+  bys year: gegen `var'_rank = rank(`var'), field
+}
+
 // KEEP & ORDER VARIABLES
-keeporder state year total_rev local_rev state_rev fed_rev
+keeporder state year total_rev local_rev state_rev fed_rev total_rev_rank ///
+  local_rev_rank state_rev_rank fed_rev_rank
 
 // LABEL VARIABLES
 
@@ -59,10 +65,16 @@ label var total_rev "Total revenue"
 label var local_rev "Local revenue"
 label var state_rev "State revenue"
 label var fed_rev "Federal revenue"
+label var total_rev_rank "Total revenue rank"
+label var local_rev_rank "Local revenue rank"
+label var state_rev_rank "State revenue rank"
+label var fed_rev_rank "Federal revenue rank"
 
 // SORT AND SAVE
 sort state year
 compress
 save "Data Derived/Revenue by State.dta", replace
 
-export delimited "Data Derived/total_rev.csv", replace
+// EXPORT TOTAL REVENUE TO CSV
+export delimited state year total_rev using "Data Derived/total_rev.csv", ///
+  replace
